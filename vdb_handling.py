@@ -74,7 +74,7 @@ def add_document_to_vdb(doc_path,retriever,config_info,sum_chain,character_split
         
     doc_ids = [str(uuid.uuid4()) for _ in range(len(chunks))]
     added_texts = [
-        Document(page_content=txt,metadata={id_key:doc_ids[idx]}) for idx,txt in enumerate(chunks)
+        Document(page_content=txt,metadata={id_key:doc_ids[idx],"source":doc_path}) for idx,txt in enumerate(chunks)
     ]
     encoded_chunks = [chunk.encode() for chunk in chunks]
 
@@ -85,7 +85,7 @@ def add_document_to_vdb(doc_path,retriever,config_info,sum_chain,character_split
     table_summaries = sum_chain.batch(tables,{"max_concurrency":10})
     table_ids = [str(uuid.uuid4()) for _ in range(len(table_summaries))]
     summaries_tables = [
-        Document(page_content=txt,metadata={id_key:table_ids[idx]}) for idx,txt in enumerate(table_summaries)
+        Document(page_content=txt,metadata={id_key:table_ids[idx],"source":doc_path}) for idx,txt in enumerate(table_summaries)
     ]
     encoded_table_summaries = [summary.encode() for summary in table_summaries]
     retriever.vectorstore.add_documents(summaries_tables)
@@ -106,7 +106,7 @@ def add_document_to_vdb(doc_path,retriever,config_info,sum_chain,character_split
 
     img_ids = [str(uuid.uuid4()) for _ in range(len(img_summaries_list))]
     summaries_imgs = [
-        Document(page_content=txt,metadata={id_key:img_ids[idx]}) for idx,txt in enumerate(img_summaries_list)
+        Document(page_content=txt,metadata={id_key:img_ids[idx],"source":doc_path}) for idx,txt in enumerate(img_summaries_list)
     ]
     encoded_imgs = [raw_img.encode() for raw_img in img_base64_list]
     retriever.vectorstore.add_documents(summaries_imgs)
@@ -148,8 +148,6 @@ if __name__=="__main__":
         local_file_store_path = "local_file_store",
         embedding_function=embedding_function,
         )
-    mv_retriever.search_type = SearchType.mmr
-    mv_retriever.search_kwargs = {"k":12}
     
     print(mv_retriever)
 
@@ -184,10 +182,23 @@ if __name__=="__main__":
 
     query = "what is Kalman filter and give me a discription of where we can use it."
 
+
+    mv_retriever.search_type = SearchType.mmr
+    source_path = doc_path
+    if source_path:
+        search_filters = {'filter': {"source": source_path}, 'k':25}
+    else:
+        search_filters = {'k':25}
+
+    mv_retriever.search_kwargs = search_filters
+
     retrieved_docs = mv_retriever.get_relevant_documents(
         query,
-
     )
+
+    retrieved_docs_from_vs = mv_retriever.vectorstore.similarity_search(query)
+    print(retrieved_docs_from_vs)
+    print("-"*100)
 
     retrieved_docs_decoded_texts = [txt.decode("utf-8") for txt in retrieved_docs]
 

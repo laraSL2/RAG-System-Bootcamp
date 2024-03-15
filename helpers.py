@@ -73,6 +73,40 @@ def image_summarize(vision_llm):
 
     return get_summary
 
+def generate_answer(prompt,llm,prompt_template,mv_retriever,reranker=None,source_path=None):
+
+    if source_path:
+        search_filters = {'filter': {"source": source_path}, 'k':15}
+    else:
+        search_filters = {'k':15}
+
+    mv_retriever.search_kwargs = search_filters
+
+    retrieved_docs = mv_retriever.get_relevant_documents(
+        prompt,
+    )
+
+    # retrieved_docs_from_vs = mv_retriever.vectorstore.similarity_search(prompt)
+    # print(retrieved_docs_from_vs)
+    # print("-"*100)
+
+    retrieved_docs_decoded_texts = [txt.decode("utf-8") for txt in retrieved_docs]
+
+    # print(len(retrieved_docs))
+    # print(type(retrieved_docs[0]),len(retrieved_docs))
+
+    if reranker:
+        results = list(reranker.rerank(query=prompt, documents=retrieved_docs_decoded_texts, top_n=5, model='rerank-english-v2.0'))
+    else:
+        results = retrieved_docs_decoded_texts
+    
+    print(results,len(results))
+
+    final_prompt = prompt_template.format(context=results,question=prompt)
+    response = llm.invoke(final_prompt).content
+    return response
+    
+
 if __name__=="__main__":
     pass
     # lang_llm = load_gemini_lang_chat_model(config_info)

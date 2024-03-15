@@ -13,7 +13,7 @@ config_info['image_output_dir_path'] = "extracted_images"
 
 
 config_info['lang_gemini_model_name'] = 'gemini-pro'
-config_info["lang_temp"] = 0.7
+config_info["lang_temp"] = 0.1
 config_info['lang_top_k'] = 3
 config_info['lang_top_p'] = 0.7
 config_info['lang_max_num_output_tokens'] = 750
