@@ -1,0 +1,4 @@
+.env
+extracted_images
+local_file_store
+vector_database
