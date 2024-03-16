@@ -5,12 +5,13 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from langchain_core.messages import HumanMessage
 
-from config import config_info,gemini_safety_settings
+from config import gemini_safety_settings
 
 load_dotenv()
 
 
 ## load the gemini llm models using langchain
+## languge model
 def load_gemini_lang_model(config_info):
     return GoogleGenerativeAI(
         model=config_info['lang_gemini_model_name'],
@@ -21,6 +22,7 @@ def load_gemini_lang_model(config_info):
         safety_settings=gemini_safety_settings,
     )
 
+## chat model
 def load_gemini_lang_chat_model(config_info):
     return ChatGoogleGenerativeAI(
         model=config_info['lang_gemini_model_name'],
@@ -31,6 +33,7 @@ def load_gemini_lang_chat_model(config_info):
         safety_settings=gemini_safety_settings,
     )
 
+## vision model
 def load_gemini_vision_model(config_info):
     return ChatGoogleGenerativeAI(
         model=config_info['vision_gemini_model_name'],
@@ -40,6 +43,7 @@ def load_gemini_vision_model(config_info):
         max_output_tokens=config_info['vision_max_num_output_tokens'],
     )
 
+## generate a summary for the extracted tables from the documents
 def table_summarization_chain(llm):
 
     prompt_template = """You are an expert in summarizing tables and texts. Provide a meaningful concise \
@@ -73,6 +77,7 @@ def image_summarize(vision_llm):
 
     return get_summary
 
+## function to generate the answer inside streamlit
 def generate_answer(prompt,llm,prompt_template,mv_retriever,reranker=None,source_path=None):
 
     if source_path:
@@ -103,7 +108,7 @@ def generate_answer(prompt,llm,prompt_template,mv_retriever,reranker=None,source
     print(results,len(results))
 
     final_prompt = prompt_template.format(context=results,question=prompt)
-    response = llm.invoke(final_prompt).content
+    response = llm.invoke(final_prompt)
     return response
     
 

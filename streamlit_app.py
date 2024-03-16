@@ -5,20 +5,22 @@ from langchain_google_genai.embeddings import GoogleGenerativeAIEmbeddings
 
 import streamlit as st
 import cohere
-from vdb_handling import create_or_get_vector_database
+
 from helpers import load_gemini_lang_chat_model, table_summarization_chain, load_gemini_vision_model
 from config import config_info
 
-from file_handling import extract_data_from_document,encode_image, get_character_splitter, get_img_summary_list
+from file_handling import encode_image, get_character_splitter
 from config import config_info
-from helpers import load_gemini_lang_chat_model, table_summarization_chain, load_gemini_vision_model
+from helpers import load_gemini_lang_model,load_gemini_lang_chat_model, table_summarization_chain, load_gemini_vision_model
 from helpers import image_summarize, generate_answer
 
 
-from vdb_handling import create_or_get_local_file_store, create_or_get_vector_database,create_or_get_vector_retriever, add_document_to_vdb
+from vdb_handling import create_or_get_vector_retriever, add_document_to_vdb
 
 
 load_dotenv()
+
+## loading necessary predefined models and objects
 
 embedding_function = GoogleGenerativeAIEmbeddings(
         model="models/embedding-001",
@@ -28,7 +30,7 @@ embedding_function = GoogleGenerativeAIEmbeddings(
 
 # doc_path = "/home/lara/Downloads/kalman_filter.pdf"
 
-lang_llm = load_gemini_lang_chat_model(config_info)
+lang_llm = load_gemini_lang_model(config_info) #load_gemini_lang_chat_model(config_info)
 sum_chain = table_summarization_chain(llm=lang_llm)
 vision_llm = load_gemini_vision_model(config_info=config_info)
 reranker = cohere.Client()
@@ -40,11 +42,13 @@ img_summarizer = image_summarize(
 
 character_splitter = get_character_splitter()
 
+# prompt to generate final answer for questions
 prompt_template = """You are an expert in programmer who has better knowledge in mathematics. Answer based on the provided context. \ 
 You must think step by step before answering the question. Reasoning is important. However please do not make up answers.
 
 Context: {context}\n
-Question: {question}"""
+Question: {question}\n
+Answer: """
 
 
 def main():
@@ -54,9 +58,9 @@ def main():
     # st.title("ChatGPT-like clone")
     st.header("QA Bot")
 
-    client = load_gemini_lang_chat_model(
-        config_info=config_info,
-    )
+    # client = load_gemini_lang_chat_model(
+    #     config_info=config_info,
+    # )
 
     # if "openai_model" not in st.session_state:
     #     st.session_state["openai_model"] = "gpt-3.5-turbo"
@@ -122,14 +126,19 @@ def main():
             # response = st.write_stream(stream)
 
 
-            response = generate_answer(
-                prompt=user_input,
-                llm = lang_llm,
-                prompt_template=prompt_template,
-                mv_retriever=st.session_state.mv_retriever,
-                reranker=reranker,
-                source_path=None,
-            )
+            try:
+                response = generate_answer(
+                    prompt=user_input,
+                    llm = lang_llm,
+                    prompt_template=prompt_template,
+                    mv_retriever=st.session_state.mv_retriever,
+                    reranker=reranker,
+                    source_path=None,
+                )
+            except Exception as ex:
+                print(f"Issue encountered: {ex}")
+                response = "Oops!! something went wrong. can you please ask the question again!!!"
+
             st.markdown(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
 

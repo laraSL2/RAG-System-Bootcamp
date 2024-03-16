@@ -3,6 +3,7 @@ from langchain_google_genai import (
     HarmCategory,
 )
 
+## some default parameter value settings - mostly used for model loading and data preprocessing
 
 config_info = {}
 

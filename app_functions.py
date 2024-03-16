@@ -1,7 +1,7 @@
 
 
 
-
+### without the UI - used for testing the functionalities
 
 from dotenv import load_dotenv
 
@@ -35,17 +35,6 @@ if __name__=="__main__":
         model="models/embedding-001",
         task_type="retrieval_query",
     )
-
-    # vdb,collection = create_or_get_vector_database(
-    #     collection_name="test_collection",
-    #     vdb_path="vector_database",
-    #     embedding_function=embedding_function,
-    # )
-
-    # print(vdb._collection.count())
-
-    # local_store = create_or_get_local_file_store("local_file_store")
-    # print(local_store)
 
     doc_path = "/home/lara/Downloads/kalman_filter.pdf"
 

@@ -1,8 +1,5 @@
-import io
 import os 
 import base64
-import numpy as np
-from PIL import Image
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -10,6 +7,7 @@ from unstructured.partition.pdf import partition_pdf
 from config import config_info
 from helpers import load_gemini_lang_chat_model, table_summarization_chain
 
+## use unstructured library to extract texts, tables, images from the pdf documents
 def extract_data_from_document(doc_path,config_info):
     pdf_path = doc_path
 
@@ -36,12 +34,13 @@ def extract_data_from_document(doc_path,config_info):
 
     return texts,tables
 
-## images
+## images - encoding
 def encode_image(image_path):
     # base64 string
     with open(image_path,'rb') as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
     
+## chunking mechanism
 def get_character_splitter(chunk_size=750,chunk_overlap=150,separators=["\n"]):
     return RecursiveCharacterTextSplitter(
         separators=separators,
@@ -49,6 +48,7 @@ def get_character_splitter(chunk_size=750,chunk_overlap=150,separators=["\n"]):
         chunk_overlap=chunk_overlap,
     )
     
+## preprocessing images to generate summaries
 def get_img_summary_list(imgs_dir,img_encoder,image_summarizer,prompt):
 
     img_base64_list = []
