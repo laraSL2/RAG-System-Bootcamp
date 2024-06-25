@@ -2,3 +2,4 @@
 extracted_images
 local_file_store
 vector_database
+__pycache__

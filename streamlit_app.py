@@ -14,7 +14,6 @@ from config import config_info
 from helpers import load_gemini_lang_model,load_gemini_lang_chat_model, table_summarization_chain, load_gemini_vision_model
 from helpers import image_summarize, generate_answer
 
-
 from vdb_handling import create_or_get_vector_retriever, add_document_to_vdb
 
 

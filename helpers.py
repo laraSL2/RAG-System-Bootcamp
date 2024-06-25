@@ -9,7 +9,6 @@ from config import gemini_safety_settings
 
 load_dotenv()
 
-
 ## load the gemini llm models using langchain
 ## languge model
 def load_gemini_lang_model(config_info):
